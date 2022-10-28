@@ -1,0 +1,177 @@
+name: snippetpixie
+base: core20
+version: 1.5.3
+summary: Your little expandable text snippet helper
+description: |
+  Save your often used text snippets and then expand them whenever you type their abbreviation.
+
+  For example:- "spr\`" expands to "Snippet Pixie rules!"
+
+  For non-accessible applications such as browsers and Electron apps, there's a shortcut (default is Ctrl+\`) for opening a search window that pastes the selected snippet.
+
+  The Search and Paste window, opened with Ctrl+\` (can be changed), is very convenient for quickly finding and pasting snippets, and shows the most recently used snippets first for quick access. Using `Shift`+`Return` or `Shift`+`Click` on an entry in the Search and Paste window will `Shift`+`Ctrl`+`V` paste, great for terminal emulators, vim etc.
+
+  Snippets can be imported and exported in a simple JSON format.
+
+  Supports placeholders:-
+
+  * Date/Time: Insert the current or calculated date/time with configurable format.
+  * Clipboard: Insert the text contents of the clipboard.
+  * Snippets: Insert snippets in your snippets!
+  * Cursor: Set where the cursor should end up after the snippet has expanded.
+
+  All placeholders are delimited (wrapped) by "$$", with the placeholder name starting with an "@" symbol.
+  For example, today's date can be inserted with "$$@date$$".
+
+grade: stable
+confinement: classic
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+  - build-on: armhf
+icon: data/icons/256/com.github.bytepixie.snippetpixie.svg
+
+apps:
+  snippetpixie:
+    command: bin/desktop-launch $SNAP/usr/bin/com.github.bytepixie.snippetpixie
+    autostart: snippetpixie_snippetpixie.desktop
+    desktop: usr/share/applications/com.github.bytepixie.snippetpixie.desktop
+    environment:
+      GSETTINGS_SCHEMA_DIR: $SNAP/usr/share/glib-2.0/schemas
+
+parts:
+  snippetpixie:
+    after: [ granite, desktop-gnome-platform ]
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+    source: .
+    override-build: |
+      snapcraftctl build
+      sed -i 's|Icon=com.github.bytepixie.snippetpixie|Icon=\${SNAP}/meta/gui/icon.svg|' ${SNAPCRAFT_PART_INSTALL}/usr/share/applications/com.github.bytepixie.snippetpixie.desktop
+    build-environment:
+      - VALAFLAGS: " --vapidir $SNAPCRAFT_STAGE/usr/share/vala/vapi"
+    build-packages:
+      - valac
+      - desktop-file-utils
+      - appstream
+      - libatspi2.0-dev
+      - libgee-0.8-dev
+      - libglib2.0-dev
+      - libgranite-dev
+      - libgtk-3-dev
+      - libibus-1.0-dev
+      - libjson-glib-dev
+      - libsqlite3-dev
+      - libxtst-dev
+      - libx11-dev
+    stage-packages:
+      - libatk-bridge2.0-0
+      - libatk1.0-0
+      - libatspi2.0-0
+      - libcairo-gobject2
+      - libcairo2
+      - libdatrie1
+      - libepoxy0
+      - libfontconfig1
+      - libfreetype6
+      - libgdk-pixbuf2.0-0
+      - libgee-0.8-2
+      - libglib2.0-0
+      - libgraphite2-3
+      - libgtk-3-0
+      - libharfbuzz0b
+      - libjson-glib-1.0-0
+      - libpango-1.0-0
+      - libpangocairo-1.0-0
+      - libpangoft2-1.0-0
+      - libpixman-1-0
+      - libpng16-16
+      - libstartup-notification0
+      - libthai0
+      - libwayland-client0
+      - libwayland-cursor0
+      - libwayland-egl1
+      - libx11-6
+      - libx11-xcb1
+      - libxau6
+      - libxcb-render0
+      - libxcb-shm0
+      - libxcb-util1
+      - libxcb1
+      - libxcomposite1
+      - libxcursor1
+      - libxdamage1
+      - libxdmcp6
+      - libxext6
+      - libxfixes3
+      - libxi6
+      - libxinerama1
+      - libxkbcommon0
+      - libxrandr2
+      - libxrender1
+      - libxres1
+      - libxtst6
+  granite:
+    plugin: meson
+    meson-parameters:
+      - --prefix=/usr
+    source: https://github.com/elementary/granite/archive/5.5.0.tar.gz
+    source-type: tar
+    override-build: |
+      snapcraftctl build
+    build-packages:
+      - gobject-introspection
+      - libgee-0.8-dev
+      - libgirepository1.0-dev
+      - libgtk-3-dev
+      - valac
+    stage-packages:
+      - libatk-bridge2.0-0
+      - libatk1.0-0
+      - libatspi2.0-0
+      - libcairo-gobject2
+      - libcairo2
+      - libdatrie1
+      - libepoxy0
+      - libfontconfig1
+      - libfreetype6
+      - libgdk-pixbuf2.0-0
+      - libgee-0.8-2
+      - libgraphite2-3
+      - libgtk-3-0
+      - libharfbuzz0b
+      - libpango-1.0-0
+      - libpangocairo-1.0-0
+      - libpangoft2-1.0-0
+      - libpixman-1-0
+      - libpng16-16
+      - libthai0
+      - libwayland-client0
+      - libwayland-cursor0
+      - libwayland-egl1
+      - libx11-6
+      - libxau6
+      - libxcb-render0
+      - libxcb-shm0
+      - libxcb1
+      - libxcomposite1
+      - libxcursor1
+      - libxdamage1
+      - libxdmcp6
+      - libxext6
+      - libxfixes3
+      - libxi6
+      - libxinerama1
+      - libxkbcommon0
+      - libxrandr2
+      - libxrender1
+  desktop-gnome-platform:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: [ "FLAVOR=gtk3" ]
+    build-packages:
+      - build-essential
+      - gettext
+      - libgtk-3-dev
